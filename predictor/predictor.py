@@ -4,7 +4,12 @@ from keras.models import Sequential
 from keras.layers import Dense, LSTM
 from sklearn.preprocessing import MinMaxScaler
 import matplotlib.pyplot as plt
+import requests
+import json
+import param as pa
+import insentive as it
 
+#인센티브 계산방법
 
 ##이전자료는 train이고 실제 할거는 test임 api를 받아와서 돌려볼 거는 test에 해당, x(다양한 변수들과)는 주어지는 발전량이고 y(실제 발전량)는 결과임
 ##데이터 프레임으로 변환
@@ -60,18 +65,39 @@ model.add(Dense(1))
 model.compile(loss='mse', optimizer='adam')
 
 
-history = model.fit(train_x_reshaped, train_y_scaled, epochs=100, batch_size=32, validation_data=(test_x_reshaped, test_y_scaled), verbose=2, shuffle=False)
+history = model.fit(train_x_reshaped, train_y_scaled, epochs=10, batch_size=32, validation_data=(test_x_reshaped, test_y_scaled), verbose=2, shuffle=False)
 
 yhat = model.predict(test_x_reshaped)
 
 yhat_original = scaler_y.inverse_transform(yhat)
 test_y_original = scaler_y.inverse_transform(test_y_scaled)
 
-plt.figure(figsize=(15,6))
-plt.plot(test_y_original, label='Actual')
-plt.plot(yhat_original, label='Predicted')
-plt.legend()
-plt.show()
+# plt.figure(figsize=(15,6))
+# plt.plot(test_y_original, label='Actual')
+# plt.plot(yhat_original, label='Predicted')
+# plt.legend()
+# plt.show()
+
+
+
+##post하는법을 잘 모르겠음
+test_y_original=test_y_original[-24:] #일단 전날 24개만 따와봄
+yhat_original=yhat_original[-24:]     #역시 마찬가지
+amounts = it.calc_profit(test_y_original,yhat_original) #다른 발전량 안써서 원래는 24개 리스트가 나와야하는데
+amounts.extend([0.0]*15)                     #그래서 일단 디버그 해보니까9개나오길래 일단 15개 채워넣음
+
+# 각 항목을 float으로 변환
+amounts = [float(item) if isinstance(item, (int, float)) else float(item[0]) for item in amounts]
+
+print(amounts)
+
+success = requests.post(f'https://research-api.solarkim.com/cmpt-2023/bids', data=json.dumps(amounts), headers={
+                            'Authorization': f'Bearer {pa.API_KEY}'
+                        }).json()
+print(success)
+
+
+
 
 
 
