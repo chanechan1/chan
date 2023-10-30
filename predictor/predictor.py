@@ -8,32 +8,41 @@ import requests
 import json
 import param as pa
 import insentive as it
-
-#인센티브 계산방법
-
 ##이전자료는 train이고 실제 할거는 test임 api를 받아와서 돌려볼 거는 test에 해당, x(다양한 변수들과)는 주어지는 발전량이고 y(실제 발전량)는 결과임
 ##데이터 프레임으로 변환
 
-##여기서는 pred.csv가 y에 해당함
 ##gen은 실제 발전량
 ##pred는 예측발전량
-##
-train_x = pd.read_csv('weather_actual.csv', index_col=0, parse_dates=True)
-train_y = pd.read_csv('gens.csv',parse_dates=True)
-test_x = pd.read_csv('weather_forecast.csv', index_col=1, parse_dates=True)
-test_y = pd.read_csv('pred.csv', parse_dates=True)
-
-##데이터 재정렬
-train_x=train_x[train_x.columns[1:]] #날씨정보
-train_y=train_y[train_y.columns[1:]] #발전정보
+train_x = pd.read_csv('weather_actual.csv', parse_dates=True) #학습시킬것 날씨량
+train_y = pd.read_csv('gens.csv',parse_dates=True)#학습시킬것 발전량
+test_x=it._get_weathers_forecasts() ##api 로 내일 데이터 따오기
+test_y=it._get_gen_forecasts()      ##api 로 내일
 
 
-test_x=test_x[test_x.columns[2:]] #1에 대한 일기예보만 살리기위해 일단 없앰
-test_x=test_x.iloc[:11616]        #1에 대한 것만 살림
 
-test_y=test_y.iloc[:58080]
-test_y=test_y[test_y.columns[3:]] #amount만 남기고
-test_y=test_y.iloc[2::5]
+
+#####################json to pandas(dataframe)#####################
+test_x=pd.DataFrame(test_x)
+test_y=pd.DataFrame(test_y)
+##test_x = pd.read_csv('weather_forecast.csv', index_col=1, parse_dates=True) api에서 내일 따올 기상예보
+##test_y = pd.read_csv('pred.csv', parse_dates=True)
+
+#############################데이터 전처리##################################
+train_x=train_x[train_x.columns[1:]] #날씨실측정보
+train_y=train_y[train_y.columns[1:]] #발전실측정보
+
+##########################
+test_x=test_x[test_x.columns[1:]] #1에 대한 일기예보만 살리기위해 일단 없앰
+
+#####################발전예측량에 대해서 어느모델에 대해 하는지###################################
+#모델 예측량에따라서 산술 평균을 낼지, 가중치를 둬서 낼지, 아니면 하나만 선택해서 할지 고민 ㄱㄱ
+test_y=test_y[test_y.columns[5:]]
+
+
+# test_x=test_x.iloc[:11616]        #1에 대한 것만 살림
+# test_y=test_y.iloc[:58080]
+# test_y=test_y[test_y.columns[3:]] #amount만 남기고
+# test_y=test_y.iloc[2::5]
 
 #정규화
 scaler_x = MinMaxScaler()
@@ -65,36 +74,27 @@ model.add(Dense(1))
 model.compile(loss='mse', optimizer='adam')
 
 
-history = model.fit(train_x_reshaped, train_y_scaled, epochs=10, batch_size=32, validation_data=(test_x_reshaped, test_y_scaled), verbose=2, shuffle=False)
+history = model.fit(train_x_reshaped, train_y_scaled, epochs=100, batch_size=32, validation_data=(test_x_reshaped, test_y_scaled), verbose=2, shuffle=False)
 
 yhat = model.predict(test_x_reshaped)
 
 yhat_original = scaler_y.inverse_transform(yhat)
 test_y_original = scaler_y.inverse_transform(test_y_scaled)
 
-# plt.figure(figsize=(15,6))
-# plt.plot(test_y_original, label='Actual')
-# plt.plot(yhat_original, label='Predicted')
-# plt.legend()
-# plt.show()
+plt.figure(figsize=(15,6))
+plt.plot(test_y_original, label='Actual')
+plt.plot(yhat_original, label='Predicted')
+plt.legend()
+plt.show()
+
+#예측량에대한 리스트
+pred=test_y_original
+#사이트에서 올려준 post
+it._post_bids(pred)
+
+print('a')
 
 
-
-##post하는법을 잘 모르겠음
-test_y_original=test_y_original[-24:] #일단 전날 24개만 따와봄
-yhat_original=yhat_original[-24:]     #역시 마찬가지
-amounts = it.calc_profit(test_y_original,yhat_original) #다른 발전량 안써서 원래는 24개 리스트가 나와야하는데
-amounts.extend([0.0]*15)                     #그래서 일단 디버그 해보니까9개나오길래 일단 15개 채워넣음
-
-# 각 항목을 float으로 변환
-amounts = [float(item) if isinstance(item, (int, float)) else float(item[0]) for item in amounts]
-
-print(amounts)
-
-success = requests.post(f'https://research-api.solarkim.com/cmpt-2023/bids', data=json.dumps(amounts), headers={
-                            'Authorization': f'Bearer {pa.API_KEY}'
-                        }).json()
-print(success)
 
 
 
