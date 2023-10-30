@@ -39,7 +39,15 @@ def _10predictor():
 
     #####################발전예측량에 대해서 어느모델에 대해 하는지###################################
     # 모델 예측량에따라서 산술 평균을 낼지, 가중치를 둬서 낼지, 아니면 하나만 선택해서 할지 고민 ㄱㄱ
-    test_y = test_y[test_y.columns[5:]]
+    test_y1 = test_y[test_y.columns[1:2]]
+    test_y2 = test_y[test_y.columns[2:3]]
+    test_y3 = test_y[test_y.columns[3:4]]
+    test_y4 = test_y[test_y.columns[4:5]]
+    test_y5 = test_y[test_y.columns[5:]]
+
+    test_ysum=pd.concat([test_y1,test_y2,test_y3,test_y4,test_y5],axis=1)
+    test_y['Average']=test_ysum.mean(axis=1)
+    test_y=test_y[test_y.columns[6:]]
 
     # test_x=test_x.iloc[:11616]        #1에 대한 것만 살림
     # test_y=test_y.iloc[:58080]
@@ -83,10 +91,15 @@ def _10predictor():
     test_y_original = scaler_y.inverse_transform(test_y_scaled)
 
     plt.figure(figsize=(15, 6))
-    plt.plot(test_y_original, label='Actual')
-    plt.plot(yhat_original, label='Predicted')
+    plt.plot(test_y_original, label='Actual') #실제 발전량
+    plt.plot(yhat_original, label='Predicted')#예측된 발전량
     plt.legend()
+    plt.title("10시 입찰")
     plt.show()
+
+    # LSTM의 MAE 계산
+    mae_lstm = it.calculate_mae(test_y_original, yhat_original) #actual,predict
+    print("MAE:",mae_lstm)
 
     # 예측량에대한 리스트
     pred = test_y_original
@@ -117,8 +130,15 @@ def _17predictor():
 
     #####################발전예측량에 대해서 어느모델에 대해 하는지###################################
     # 모델 예측량에따라서 산술 평균을 낼지, 가중치를 둬서 낼지, 아니면 하나만 선택해서 할지 고민 ㄱㄱ
-    test_y = test_y[test_y.columns[5:]]
 
+    test_y1 = test_y[test_y.columns[1:2]]
+    test_y2 = test_y[test_y.columns[2:3]]
+    test_y3 = test_y[test_y.columns[3:4]]
+    test_y4 = test_y[test_y.columns[4:5]]
+    test_y5 = test_y[test_y.columns[5:]]
+    test_ysum = pd.concat([test_y1, test_y2, test_y3, test_y4, test_y5], axis=1)
+    test_y['Average'] = test_ysum.mean(axis=1)
+    test_y = test_y[test_y.columns[6:]]
     # test_x=test_x.iloc[:11616]        #1에 대한 것만 살림
     # test_y=test_y.iloc[:58080]
     # test_y=test_y[test_y.columns[3:]] #amount만 남기고
@@ -164,16 +184,19 @@ def _17predictor():
     plt.plot(test_y_original, label='Actual')
     plt.plot(yhat_original, label='Predicted')
     plt.legend()
+    plt.title("17시 입찰")
     plt.show()
 
     # 예측량에대한 리스트
     pred = test_y_original
     # 사이트에서 올려준 post
     it._post_bids(pred)
+    # LSTM의 MAE 계산
+    mae_lstm = it.calculate_mae(test_y_original, yhat_original)  # actual,predict
+    print("MAE:", mae_lstm)
 
-    print('a')
 
-_10predictor()
+# _10predictor()
 _17predictor()
 
 
