@@ -8,91 +8,173 @@ import requests
 import json
 import param as pa
 import insentive as it
-##이전자료는 train이고 실제 할거는 test임 api를 받아와서 돌려볼 거는 test에 해당, x(다양한 변수들과)는 주어지는 발전량이고 y(실제 발전량)는 결과임
+from datetime import datetime
+import pytz
+
+##이전자료는 train이고 실제 할거는 test임 api를 받아와서 돌려볼 거는 test에 해당, x(다양한 변수들과)는 주어지는 날씨량이고 y(실제 발전량)는 결과임
 ##데이터 프레임으로 변환
 
-##gen은 실제 발전량
-##pred는 예측발전량
-train_x = pd.read_csv('weather_actual.csv', parse_dates=True) #학습시킬것 날씨량
-train_y = pd.read_csv('gens.csv',parse_dates=True)#학습시킬것 발전량
-test_x=it._get_weathers_forecasts() ##api 로 내일 데이터 따오기
-test_y=it._get_gen_forecasts()      ##api 로 내일
+def _10predictor():
+    ##gen은 실제 발전량
+    ##pred는 예측발전량
+    train_x = pd.read_csv('weather_actual.csv', parse_dates=True)  # 학습시킬것 날씨량
+    train_y = pd.read_csv('gens.csv', parse_dates=True)  # 학습시킬것 발전량
+    test_x = it._get_weathers_forecasts10()  ##api 로 내일 데이터 따오기
+    test_y = it._get_gen_forecasts10()  ##api 로 내일
+
+    # #####################json to pandas(dataframe)#####################
+    # test_x = pd.DataFrame(test_x)
+    # test_y = pd.DataFrame(test_y)
+    ##test_x = pd.read_csv('weather_forecast.csv', index_col=1, parse_dates=True) api에서 내일 따올 기상예보
+    ##test_y = pd.read_csv('pred.csv', parse_dates=True)
 
 
 
+    #############################데이터 전처리##################################
+    train_x = train_x[train_x.columns[1:]]  # 날씨실측정보
+    train_y = train_y[train_y.columns[1:]]  # 발전실측정보
 
-#####################json to pandas(dataframe)#####################
-test_x=pd.DataFrame(test_x)
-test_y=pd.DataFrame(test_y)
-##test_x = pd.read_csv('weather_forecast.csv', index_col=1, parse_dates=True) api에서 내일 따올 기상예보
-##test_y = pd.read_csv('pred.csv', parse_dates=True)
+    ##########################
+    test_x = test_x[test_x.columns[1:]]  # 1에 대한 일기예보만 살리기위해 일단 없앰
 
-#############################데이터 전처리##################################
-train_x=train_x[train_x.columns[1:]] #날씨실측정보
-train_y=train_y[train_y.columns[1:]] #발전실측정보
+    #####################발전예측량에 대해서 어느모델에 대해 하는지###################################
+    # 모델 예측량에따라서 산술 평균을 낼지, 가중치를 둬서 낼지, 아니면 하나만 선택해서 할지 고민 ㄱㄱ
+    test_y = test_y[test_y.columns[5:]]
 
-##########################
-test_x=test_x[test_x.columns[1:]] #1에 대한 일기예보만 살리기위해 일단 없앰
+    # test_x=test_x.iloc[:11616]        #1에 대한 것만 살림
+    # test_y=test_y.iloc[:58080]
+    # test_y=test_y[test_y.columns[3:]] #amount만 남기고
+    # test_y=test_y.iloc[2::5]
 
-#####################발전예측량에 대해서 어느모델에 대해 하는지###################################
-#모델 예측량에따라서 산술 평균을 낼지, 가중치를 둬서 낼지, 아니면 하나만 선택해서 할지 고민 ㄱㄱ
-test_y=test_y[test_y.columns[5:]]
+    # 정규화
+    scaler_x = MinMaxScaler()
+    scaler_y = MinMaxScaler()
 
+    ##값들만 추출 학습에 쓰이는 형태로 쓰기
+    train_x_values = train_x.values
+    train_x_scaled = scaler_x.fit_transform(train_x_values)
 
-# test_x=test_x.iloc[:11616]        #1에 대한 것만 살림
-# test_y=test_y.iloc[:58080]
-# test_y=test_y[test_y.columns[3:]] #amount만 남기고
-# test_y=test_y.iloc[2::5]
+    train_y_values = train_y.values
+    train_y_scaled = scaler_y.fit_transform(train_y_values)
 
-#정규화
-scaler_x = MinMaxScaler()
-scaler_y = MinMaxScaler()
+    test_x_values = test_x.values
+    test_x_scaled = scaler_x.transform(test_x_values)
 
-##값들만 추출
-train_x_values = train_x.values
-train_x_scaled = scaler_x.fit_transform(train_x_values)
+    test_y_values = test_y.values
+    test_y_scaled = scaler_y.transform(test_y_values)
 
-train_y_values = train_y.values
-train_y_scaled = scaler_y.fit_transform(train_y_values)
+    train_x_reshaped = train_x_scaled.reshape((train_x_scaled.shape[0], 1, train_x_scaled.shape[1]))
+    test_x_reshaped = test_x_scaled.reshape((test_x_scaled.shape[0], 1, test_x_scaled.shape[1]))
 
-test_x_values = test_x.values
-test_x_scaled = scaler_x.transform(test_x_values)
+    #
+    input_shape = (1, train_x_scaled.shape[1])
 
-test_y_values = test_y.values
-test_y_scaled = scaler_y.transform(test_y_values)
+    model = Sequential()
+    model.add(LSTM(50, input_shape=input_shape))
+    model.add(Dense(1))
+    model.compile(loss='mse', optimizer='adam')
 
+    history = model.fit(train_x_reshaped, train_y_scaled, epochs=100, batch_size=32,
+                        validation_data=(test_x_reshaped, test_y_scaled), verbose=2, shuffle=False)
 
-train_x_reshaped = train_x_scaled.reshape((train_x_scaled.shape[0], 1, train_x_scaled.shape[1]))
-test_x_reshaped = test_x_scaled.reshape((test_x_scaled.shape[0], 1, test_x_scaled.shape[1]))
+    yhat = model.predict(test_x_reshaped)
 
-#그냥 해보기
-input_shape = (1, train_x_scaled.shape[1])
+    yhat_original = scaler_y.inverse_transform(yhat)
+    test_y_original = scaler_y.inverse_transform(test_y_scaled)
 
-model = Sequential()
-model.add(LSTM(50, input_shape=input_shape))
-model.add(Dense(1))
-model.compile(loss='mse', optimizer='adam')
+    plt.figure(figsize=(15, 6))
+    plt.plot(test_y_original, label='Actual')
+    plt.plot(yhat_original, label='Predicted')
+    plt.legend()
+    plt.show()
 
+    # 예측량에대한 리스트
+    pred = test_y_original
+    # 사이트에서 올려준 post
+    it._post_bids(pred)
 
-history = model.fit(train_x_reshaped, train_y_scaled, epochs=100, batch_size=32, validation_data=(test_x_reshaped, test_y_scaled), verbose=2, shuffle=False)
+    print('a')
+def _17predictor():
+    ##gen은 실제 발전량
+    ##pred는 예측발전량
+    train_x = pd.read_csv('weather_actual.csv', parse_dates=True)  # 학습시킬것 날씨량
+    train_y = pd.read_csv('gens.csv', parse_dates=True)  # 학습시킬것 발전량
+    test_x = it._get_weathers_forecasts17()  ##api 로 내일 데이터 따오기
+    test_y = it._get_gen_forecasts17()  ##api 로 내일
 
-yhat = model.predict(test_x_reshaped)
+    #####################json to pandas(dataframe)#####################
+    test_x = pd.DataFrame(test_x)
+    test_y = pd.DataFrame(test_y)
+    ##test_x = pd.read_csv('weather_forecast.csv', index_col=1, parse_dates=True) api에서 내일 따올 기상예보
+    ##test_y = pd.read_csv('pred.csv', parse_dates=True)
 
-yhat_original = scaler_y.inverse_transform(yhat)
-test_y_original = scaler_y.inverse_transform(test_y_scaled)
+    #############################데이터 전처리##################################
+    train_x = train_x[train_x.columns[1:]]  # 날씨실측정보
+    train_y = train_y[train_y.columns[1:]]  # 발전실측정보
 
-plt.figure(figsize=(15,6))
-plt.plot(test_y_original, label='Actual')
-plt.plot(yhat_original, label='Predicted')
-plt.legend()
-plt.show()
+    ##########################
+    test_x = test_x[test_x.columns[1:]]  # 1에 대한 일기예보만 살리기위해 일단 없앰
 
-#예측량에대한 리스트
-pred=test_y_original
-#사이트에서 올려준 post
-it._post_bids(pred)
+    #####################발전예측량에 대해서 어느모델에 대해 하는지###################################
+    # 모델 예측량에따라서 산술 평균을 낼지, 가중치를 둬서 낼지, 아니면 하나만 선택해서 할지 고민 ㄱㄱ
+    test_y = test_y[test_y.columns[5:]]
 
-print('a')
+    # test_x=test_x.iloc[:11616]        #1에 대한 것만 살림
+    # test_y=test_y.iloc[:58080]
+    # test_y=test_y[test_y.columns[3:]] #amount만 남기고
+    # test_y=test_y.iloc[2::5]
+
+    # 정규화
+    scaler_x = MinMaxScaler()
+    scaler_y = MinMaxScaler()
+
+    ##값들만 추출 학습에 쓰이는 형태로 쓰기
+    train_x_values = train_x.values
+    train_x_scaled = scaler_x.fit_transform(train_x_values)
+
+    train_y_values = train_y.values
+    train_y_scaled = scaler_y.fit_transform(train_y_values)
+
+    test_x_values = test_x.values
+    test_x_scaled = scaler_x.transform(test_x_values)
+
+    test_y_values = test_y.values
+    test_y_scaled = scaler_y.transform(test_y_values)
+
+    train_x_reshaped = train_x_scaled.reshape((train_x_scaled.shape[0], 1, train_x_scaled.shape[1]))
+    test_x_reshaped = test_x_scaled.reshape((test_x_scaled.shape[0], 1, test_x_scaled.shape[1]))
+
+    #
+    input_shape = (1, train_x_scaled.shape[1])
+
+    model = Sequential()
+    model.add(LSTM(50, input_shape=input_shape))
+    model.add(Dense(1))
+    model.compile(loss='mse', optimizer='adam')
+
+    history = model.fit(train_x_reshaped, train_y_scaled, epochs=100, batch_size=32,
+                        validation_data=(test_x_reshaped, test_y_scaled), verbose=2, shuffle=False)
+
+    yhat = model.predict(test_x_reshaped)
+
+    yhat_original = scaler_y.inverse_transform(yhat)
+    test_y_original = scaler_y.inverse_transform(test_y_scaled)
+
+    plt.figure(figsize=(15, 6))
+    plt.plot(test_y_original, label='Actual')
+    plt.plot(yhat_original, label='Predicted')
+    plt.legend()
+    plt.show()
+
+    # 예측량에대한 리스트
+    pred = test_y_original
+    # 사이트에서 올려준 post
+    it._post_bids(pred)
+
+    print('a')
+
+_10predictor()
+_17predictor()
 
 
 

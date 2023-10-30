@@ -2,6 +2,9 @@ import requests
 import json
 import param as pa
 import numpy as np
+import pandas as pd
+from datetime import datetime
+import pytz
 
 _API_URL = "https://research-api.solarkim.com"
 _API_KEY = API_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJaZlg3NGJObUNDUDhBZWI2elQ3MldoIiwiaWF0IjoxNjk4NDgxMTEzLCJleHAiOjE3MDAyMzMyMDAsInR5cGUiOiJhcGlfa2V5In0.EDbJYB23JVxxDjdn_TLBWUjq8-sV9iRVP4N8PUG3-9E'
@@ -32,43 +35,82 @@ def _post(url: str, data):
     return response.json()
 
 
-def _get_weathers_forecasts():
+def _get_weathers_forecasts10():
     """
     기상데이터 일단위 기상예측 데이터 조회 (https://research-api.solarkim.com/docs#tag/Competition-2023/operation/get_weathers_forecasts_date_bid_round_cmpt_2023_weathers_forecasts__date___bid_round__get 참고)
     """
     date = "2023-10-27"
     bid_round_10 = 1
-    bid_round_17 = 2
+
 
     weather_fcst_10 = _get(
         f"{_API_URL}/cmpt-2023/weathers-forecasts/{date}/{bid_round_10}"
     )
+    # 데이터프레임
+    weather_fcst_10 = pd.DataFrame(weather_fcst_10)
+    weather_fcst_10['time']=pd.to_datetime(weather_fcst_10['time'], utc=True)
 
+    seoul_tz = pytz.timezone('Asia/Seoul')
+    weather_fcst_10['time'] = weather_fcst_10['time'].dt.tz_convert(seoul_tz)
+
+    print(weather_fcst_10)
+
+
+    return weather_fcst_10
+def _get_weathers_forecasts17():
+    """
+    기상데이터 일단위 기상예측 데이터 조회 (https://research-api.solarkim.com/docs#tag/Competition-2023/operation/get_weathers_forecasts_date_bid_round_cmpt_2023_weathers_forecasts__date___bid_round__get 참고)
+    """
+    date = "2023-10-27"
+
+    bid_round_17 = 2
     weather_fcst_17 = _get(
         f"{_API_URL}/cmpt-2023/weathers-forecasts/{date}/{bid_round_17}"
     )
+    weather_fcst_17 = pd.DataFrame(weather_fcst_17)
+    weather_fcst_17['time'] = pd.to_datetime(weather_fcst_17['time'], utc=True)
 
-    print(weather_fcst_10)
+    seoul_tz = pytz.timezone('Asia/Seoul')
+    weather_fcst_17['time'] = weather_fcst_17['time'].dt.tz_convert(seoul_tz)
+
     print(weather_fcst_17)
 
-    return weather_fcst_10
+    return weather_fcst_17
 
-def _get_gen_forecasts():
+def _get_gen_forecasts10():
     """
     더쉐어 예측 모델의 예측 발전량 조회, 입찰대상일의 5가지 예측 모델의 예측 발전량 값을 취득한다 (https://research-api.solarkim.com/docs#tag/Competition-2023/operation/get_gen_forecasts_date_cmpt_2023_gen_forecasts__date___bid_round__get 참고)
     """
     date = "2023-10-27"
     bid_round_10 = 1
-    bid_round_17 = 2
 
     gen_fcst_10 = _get(f"{_API_URL}/cmpt-2023/gen-forecasts/{date}/{bid_round_10}")
 
-    gen_fcst_17 = _get(f"{_API_URL}/cmpt-2023/gen-forecasts/{date}/{bid_round_17}")
+    #데이터프레임
+    gen_fcst_10 = pd.DataFrame(gen_fcst_10)
+    gen_fcst_10['time'] = pd.to_datetime(gen_fcst_10['time'], utc=True)
+    seoul_tz = pytz.timezone('Asia/Seoul')
+    gen_fcst_10['time'] = gen_fcst_10['time'].dt.tz_convert(seoul_tz)
 
+    #UTC를 서울시간대로
     print(gen_fcst_10)
-    print(gen_fcst_17)
 
     return gen_fcst_10
+def _get_gen_forecasts17():
+    """
+    더쉐어 예측 모델의 예측 발전량 조회, 입찰대상일의 5가지 예측 모델의 예측 발전량 값을 취득한다 (https://research-api.solarkim.com/docs#tag/Competition-2023/operation/get_gen_forecasts_date_cmpt_2023_gen_forecasts__date___bid_round__get 참고)
+    """
+    date = "2023-10-27"
+    bid_round_17 = 2
+
+    gen_fcst_17 = _get(f"{_API_URL}/cmpt-2023/gen-forecasts/{date}/{bid_round_17}")
+    # 데이터프레임
+    gen_fcst_17 = pd.DataFrame(gen_fcst_17)
+    gen_fcst_17['time'] = pd.to_datetime(gen_fcst_17['time'], utc=True)
+    seoul_tz = pytz.timezone('Asia/Seoul')
+    gen_fcst_17['time'] = gen_fcst_17['time'].dt.tz_convert(seoul_tz)
+
+    return gen_fcst_17
 
 
 def _get_weathers_observeds():
@@ -103,11 +145,8 @@ def _post_bids(amounts):
     print(success)
 
 def _run():
-    _get_weathers_forecasts()
-    _get_gen_forecasts()
-    _get_weathers_observeds()
-    _get_bids_result()
-    _post_bids()
+
+    _get_weathers_forecasts10()
 
 
 if __name__ == "__main__":
