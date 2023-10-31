@@ -2,6 +2,8 @@ import requests
 import param as pa
 from datetime import datetime,timedelta
 ##기상데이터 일단위 예측조회
+#내일 예측데이터
+
 # 오늘 날짜 구하기
 today = datetime.now()
 

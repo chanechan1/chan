@@ -41,12 +41,13 @@ def _get_weathers_forecasts10():
     # 오늘 날짜 구하기
     today = datetime.now()
 
-    # # 오늘 날짜에 하루 더하기
-    # tomorrow = today + timedelta(days=1)
-    #
-    # # 날짜 형식 지정 (예: '2023-10-02')
-    # tomorrow_formatted = tomorrow.strftime('%Y-%m-%d')
-    date = today.strftime('%Y-%m-%d')
+    # 오늘 날짜에 하루 더하기
+    tomorrow = today + timedelta(days=1)
+
+    # 날짜 형식 지정 (예: '2023-10-02')
+    tomorrow_formatted = tomorrow.strftime('%Y-%m-%d')
+
+    date = tomorrow_formatted
 
     bid_round_10 = 1
 
@@ -104,7 +105,8 @@ def _get_gen_forecasts10():
     # 날짜 형식 지정 (예: '2023-10-02')
     tomorrow_formatted = tomorrow.strftime('%Y-%m-%d')
 
-    date = today.strftime('%Y-%m-%d')
+    date = tomorrow_formatted
+
     bid_round_10 = 1
 
     gen_fcst_10 = _get(f"{_API_URL}/cmpt-2023/gen-forecasts/{date}/{bid_round_10}")
@@ -164,8 +166,7 @@ def _post_bids(amounts):
     일단위 태양광 발전량 입찰. 시간별 24개의 발전량을 입찰하며 API가 호출된 시간에 따라 입찰 대상일이 결정된다.
     """
     # NumPy 배열을 파이썬 리스트로 변환
-    if isinstance(amounts, np.ndarray):
-        amounts = amounts.tolist()
+
 
     success = _post(f"{_API_URL}/cmpt-2023/bids", amounts)
     print(amounts)

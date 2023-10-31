@@ -93,8 +93,11 @@ def _10predictor():
     plt.figure(figsize=(15, 6))
     plt.plot(test_y_original, label='Actual') #실제 발전량
     plt.plot(yhat_original, label='Predicted')#예측된 발전량
+    A=list(range(24))
+    plt.xticks((A))
+    plt.grid
     plt.legend()
-    plt.title("10시 입찰")
+    plt.title("10")
     plt.show()
 
     # LSTM의 MAE 계산
@@ -102,7 +105,9 @@ def _10predictor():
     print("MAE:",mae_lstm)
 
     # 예측량에대한 리스트
-    pred = test_y_original
+    pred = yhat_original
+    pred = pred.tolist()
+    pred = [item for sublist in pred for item in sublist]
     # 사이트에서 올려준 post
     it._post_bids(pred)
 
@@ -184,20 +189,27 @@ def _17predictor():
     plt.plot(test_y_original, label='Actual')
     plt.plot(yhat_original, label='Predicted')
     plt.legend()
-    plt.title("17시 입찰")
+    plt.title("17")
+    A = list(range(24))
+    plt.xticks((A))
+    plt.grid
+
     plt.show()
 
     # 예측량에대한 리스트
-    pred = test_y_original
+    pred = yhat_original
+    pred=pred.tolist()
+    pred = [item for sublist in pred for item in sublist]
     # 사이트에서 올려준 post
     it._post_bids(pred)
     # LSTM의 MAE 계산
     mae_lstm = it.calculate_mae(test_y_original, yhat_original)  # actual,predict
+
     print("MAE:", mae_lstm)
 
 
-# _10predictor()
-_17predictor()
+_10predictor()
+#_17predictor()
 
 
 
