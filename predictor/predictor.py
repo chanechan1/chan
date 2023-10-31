@@ -14,6 +14,7 @@ import pytz
 ##이전자료는 train이고 실제 할거는 test임 api를 받아와서 돌려볼 거는 test에 해당, x(다양한 변수들과)는 주어지는 날씨량이고 y(실제 발전량)는 결과임
 ##데이터 프레임으로 변환
 
+
 def _10predictor():
     ##gen은 실제 발전량
     ##pred는 예측발전량
