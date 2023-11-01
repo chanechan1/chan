@@ -27,6 +27,7 @@ def _10predictor():
     test_x = it._get_weathers_forecasts10()  ##api 내일 일기예보 가져옴
     test_y = it._get_gen_forecasts10()  ##api 로 내일
 
+
     # #####################json to pandas(dataframe)#####################
     # test_x = pd.DataFrame(test_x)
     # test_y = pd.DataFrame(test_y)
