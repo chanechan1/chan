@@ -168,14 +168,20 @@ def _post_bids(amounts):
     # NumPy 배열을 파이썬 리스트로 변환
 
 
-    success = _post(f"{_API_URL}/cmpt-2023/bids", amounts)
+    #success = _post(f"{_API_URL}/cmpt-2023/bids", amounts)
+    success = requests.post(f'https://research-api.solarkim.com/cmpt-2023/bids', data=json.dumps(amounts), headers={
+        'Authorization': f'Bearer {API_KEY}'
+    }).json()
+
     print(amounts)
     print(success)
 
 def _run():
 
     # _get_weathers_forecasts10()
-    -_get_weathers_observeds()
+    _get_weathers_observeds()
+    _get_bids_result()
+    print('a')
 def calculate_mae(actual, predicted):
     return np.mean(np.abs(actual - predicted))
 

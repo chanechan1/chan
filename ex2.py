@@ -1,3 +1,4 @@
+import pandas as pd
 import requests
 import param as pa
 from datetime import datetime,timedelta
@@ -17,8 +18,9 @@ tomorrow_formatted = tomorrow.strftime('%Y-%m-%d')
 
 date = tomorrow_formatted
 
-bid_round = 2
+bid_round = 1
 weather_fcst = requests.get(f'https://research-api.solarkim.com/cmpt-2023/weathers-forecasts/{date}/{bid_round}', headers={
                             'Authorization': f'Bearer {pa.API_KEY}'
                         }).json()
+weather_fcst=pd.DataFrame(weather_fcst)
 print(weather_fcst)

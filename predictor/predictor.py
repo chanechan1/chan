@@ -23,32 +23,36 @@ def _10predictor():
     test_x = it._get_weathers_forecasts10()  ##api 로 내일 데이터 따오기
     test_y = it._get_gen_forecasts10()  ##api 로 내일
 
-    # #####################json to pandas(dataframe)#####################
-    # test_x = pd.DataFrame(test_x)
-    # test_y = pd.DataFrame(test_y)
-    ##test_x = pd.read_csv('weather_forecast.csv', index_col=1, parse_dates=True) api에서 내일 따올 기상예보
-    ##test_y = pd.read_csv('pred.csv', parse_dates=True)
-
-
-
     #############################데이터 전처리##################################
     train_x = train_x[train_x.columns[1:]]  # 날씨실측정보
     train_y = train_y[train_y.columns[1:]]  # 발전실측정보
 
     ##########################
-    test_x = test_x[test_x.columns[1:]]  # 1에 대한 일기예보만 살리기위해 일단 없앰
+    test_x = test_x[test_x.columns[1:]]
 
-    #####################발전예측량에 대해서 어느모델에 대해 하는지###################################
-    # 모델 예측량에따라서 산술 평균을 낼지, 가중치를 둬서 낼지, 아니면 하나만 선택해서 할지 고민 ㄱㄱ
-    test_y1 = test_y[test_y.columns[1:2]]
-    test_y2 = test_y[test_y.columns[2:3]]
-    test_y3 = test_y[test_y.columns[3:4]]
-    test_y4 = test_y[test_y.columns[4:5]]
-    test_y5 = test_y[test_y.columns[5:]]
+    #################가장좋은 모델에 대해서만 test_y를 ######################
 
-    test_ysum=pd.concat([test_y1,test_y2,test_y3,test_y4,test_y5],axis=1)
-    test_y['Average']=test_ysum.mean(axis=1)
-    test_y=test_y[test_y.columns[6:]]
+    goodmodel = [0, 0, 0, 0, 0, 0, 0, 1, 1, 3, 3, 3, 1, 3, 0, 1, 3, 1, 0, 0, 0, 0, 0, 0]
+
+    selected_values = []
+
+    for i, model_index in enumerate(goodmodel):
+        selected_value = test_y.iloc[i, model_index + 1]  # +1은 'time' 컬럼을 고려하여 인덱스를 조정
+        selected_values.append(selected_value)
+
+    test_y = pd.DataFrame(selected_values)
+
+    # #####################발전예측량에 대해서 어느모델에 대해 하는지###################################
+    # # 모델 예측량에따라서 산술 평균을 낼지, 가중치를 둬서 낼지, 아니면 하나만 선택해서 할지 고민 ㄱㄱ
+    # test_y1 = test_y[test_y.columns[1:2]]
+    # test_y2 = test_y[test_y.columns[2:3]]
+    # test_y3 = test_y[test_y.columns[3:4]]
+    # test_y4 = test_y[test_y.columns[4:5]]
+    # test_y5 = test_y[test_y.columns[5:]]
+
+    # test_ysum=pd.concat([test_y1,test_y2,test_y3,test_y4,test_y5],axis=1)
+    # test_y['Average']=test_ysum.mean(axis=1)
+    # test_y=test_y[test_y.columns[6:]]
 
     # test_x=test_x.iloc[:11616]        #1에 대한 것만 살림
     # test_y=test_y.iloc[:58080]
@@ -124,8 +128,6 @@ def _17predictor():
     #####################json to pandas(dataframe)#####################
     test_x = pd.DataFrame(test_x)
     test_y = pd.DataFrame(test_y)
-    ##test_x = pd.read_csv('weather_forecast.csv', index_col=1, parse_dates=True) api에서 내일 따올 기상예보
-    ##test_y = pd.read_csv('pred.csv', parse_dates=True)
 
     #############################데이터 전처리##################################
     train_x = train_x[train_x.columns[1:]]  # 날씨실측정보
@@ -137,18 +139,26 @@ def _17predictor():
     #####################발전예측량에 대해서 어느모델에 대해 하는지###################################
     # 모델 예측량에따라서 산술 평균을 낼지, 가중치를 둬서 낼지, 아니면 하나만 선택해서 할지 고민 ㄱㄱ
 
-    test_y1 = test_y[test_y.columns[1:2]]
-    test_y2 = test_y[test_y.columns[2:3]]
-    test_y3 = test_y[test_y.columns[3:4]]
-    test_y4 = test_y[test_y.columns[4:5]]
-    test_y5 = test_y[test_y.columns[5:]]
-    test_ysum = pd.concat([test_y1, test_y2, test_y3, test_y4, test_y5], axis=1)
-    test_y['Average'] = test_ysum.mean(axis=1)
-    test_y = test_y[test_y.columns[6:]]
-    # test_x=test_x.iloc[:11616]        #1에 대한 것만 살림
-    # test_y=test_y.iloc[:58080]
-    # test_y=test_y[test_y.columns[3:]] #amount만 남기고
-    # test_y=test_y.iloc[2::5]
+    #################가장좋은 모델에 대해서만 test_y를 ######################
+
+    goodmodel = [0, 0, 0, 0, 0, 0, 0, 1, 1, 3, 3, 3, 1, 3, 0, 1, 3, 1, 0, 0, 0, 0, 0, 0]
+
+    selected_values = []
+
+    for i, model_index in enumerate(goodmodel):
+        selected_value = test_y.iloc[i, model_index + 1]  # +1은 'time' 컬럼을 고려하여 인덱스를 조정
+        selected_values.append(selected_value)
+
+    test_y = pd.DataFrame(selected_values)
+    ########산술평균##########
+    # test_y1 = test_y[test_y.columns[1:2]]
+    # test_y2 = test_y[test_y.columns[2:3]]
+    # test_y3 = test_y[test_y.columns[3:4]]
+    # test_y4 = test_y[test_y.columns[4:5]]
+    # test_y5 = test_y[test_y.columns[5:]]
+    # test_ysum = pd.concat([test_y1, test_y2, test_y3, test_y4, test_y5], axis=1)
+    # test_y['Average'] = test_ysum.mean(axis=1)
+    # test_y = test_y[test_y.columns[6:]]
 
     # 정규화
     scaler_x = MinMaxScaler()
@@ -203,6 +213,8 @@ def _17predictor():
     pred = [item for sublist in pred for item in sublist]
     # 사이트에서 올려준 post
     it._post_bids(pred)
+
+
     # LSTM의 MAE 계산
     mae_lstm = it.calculate_mae(test_y_original, yhat_original)  # actual,predict
 
@@ -210,7 +222,7 @@ def _17predictor():
 
 
 _10predictor()
-#_17predictor()
+_17predictor()
 
 
 
