@@ -1,4 +1,5 @@
 # import pandas as pd
+# import numpy as np
 #
 # # 데이터 로드
 # actual_weather_data = pd.read_csv('weather_actual.csv')
@@ -10,63 +11,16 @@
 # actual_weather_data = actual_weather_data[['time', 'cloud', 'temp', 'humidity', 'ground_press', 'wind_speed', 'wind_dir', 'rain', 'snow', 'dew_point', 'vis', 'uv_idx', 'azimuth', 'elevation']]
 # predicted_weather_data = predicted_weather_data[['cloud', 'temp', 'humidity', 'ground_press', 'wind_speed', 'wind_dir', 'rain', 'snow', 'dew_point', 'vis', 'uv_idx', 'azimuth', 'elevation']]
 #
-# # 상관계수 계산
-# correlation_matrix_actual = actual_weather_data.corr()
-# correlation_matrix_predicted = predicted_weather_data.corr()
+# # 각 열에 대한 오차율 계산
+# for column in actual_weather_data.columns[1:]:
+#     actual_col_name = column
+#     predicted_col_name = column
+#     actual_weather_data[f'{column}_오차율(%)'] = ((predicted_weather_data[predicted_col_name]) - actual_weather_data[actual_col_name]  / actual_weather_data[actual_col_name]) * 100
 #
-# # 각 열의 가중치 계산
-# cloud_weight = correlation_matrix_actual['cloud']['cloud']
-# temp_weight = correlation_matrix_actual['temp']['temp']
-# humidity_weight = correlation_matrix_actual['humidity']['humidity']
-# ground_press_weight = correlation_matrix_actual['ground_press']['ground_press']
-# wind_speed_weight = correlation_matrix_actual['wind_speed']['wind_speed']
-# wind_dir_weight = correlation_matrix_actual['wind_dir']['wind_dir']
-# rain_weight = correlation_matrix_actual['rain']['rain']
-# snow_weight = correlation_matrix_actual['snow']['snow']
-# dew_point_weight = correlation_matrix_actual['dew_point']['dew_point']
-# vis_weight = correlation_matrix_actual['vis']['vis']
-# uv_idx_weight = correlation_matrix_actual['uv_idx']['uv_idx']
-# azimuth_weight = correlation_matrix_actual['azimuth']['azimuth']
-# elevation_weight = correlation_matrix_actual['elevation']['elevation']
 #
-# # 각 데이터 프레임에 가중 평균 계산
-# actual_weather_data['weighted_combined'] = (
-#     actual_weather_data['cloud'] * cloud_weight +
-#     actual_weather_data['temp'] * temp_weight +
-#     actual_weather_data['humidity'] * humidity_weight +
-#     actual_weather_data['ground_press'] * ground_press_weight +
-#     actual_weather_data['wind_speed'] * wind_speed_weight +
-#     actual_weather_data['wind_dir'] * wind_dir_weight +
-#     actual_weather_data['rain'] * rain_weight +
-#     actual_weather_data['snow'] * snow_weight +
-#     actual_weather_data['dew_point'] * dew_point_weight +
-#     actual_weather_data['vis'] * vis_weight +
-#     actual_weather_data['uv_idx'] * uv_idx_weight +
-#     actual_weather_data['azimuth'] * azimuth_weight +
-#     actual_weather_data['elevation'] * elevation_weight
-# )
-#
-# predicted_weather_data['weighted_combined'] = (
-#     predicted_weather_data['cloud'] * cloud_weight +
-#     predicted_weather_data['temp'] * temp_weight +
-#     predicted_weather_data['humidity'] * humidity_weight +
-#     predicted_weather_data['ground_press'] * ground_press_weight +
-#     predicted_weather_data['wind_speed'] * wind_speed_weight +
-#     predicted_weather_data['wind_dir'] * wind_dir_weight +
-#     predicted_weather_data['rain'] * rain_weight +
-#     predicted_weather_data['snow'] * snow_weight +
-#     predicted_weather_data['dew_point'] * dew_point_weight +
-#     predicted_weather_data['vis'] * vis_weight +
-#     predicted_weather_data['uv_idx'] * uv_idx_weight +
-#     predicted_weather_data['azimuth'] * azimuth_weight +
-#     predicted_weather_data['elevation'] * elevation_weight
-# )
-#
-# # 결과 데이터를 합칠 수 있음
-# result_data = pd.concat([actual_weather_data, predicted_weather_data], axis=1)
-#
-# # 가중 평균 값 출력
-# print(result_data[['time', 'weighted_combined']])
+# # 결과 데이터 출력
+# print(actual_weather_data)
+
 import pandas as pd
 from keras.models import Sequential
 from keras.layers import Dense, LSTM
@@ -112,7 +66,7 @@ model.add(LSTM(50, input_shape=input_shape))
 model.add(Dense(1))
 model.compile(loss='mse', optimizer='adam')
 
-model.fit(train_x_actual_reshaped, train_y_actual_scaled, epochs=1000, batch_size=64, verbose=2, shuffle=False)
+model.fit(train_x_actual_reshaped, train_y_actual_scaled, epochs=100, batch_size=32, verbose=2, shuffle=False)
 # 모델 예측
 train_x_predicted_reshaped = train_x_predicted_scaled.reshape((train_x_predicted_scaled.shape[0], 1, train_x_predicted_scaled.shape[1]))
 yhat = model.predict(train_x_predicted_reshaped)
@@ -128,7 +82,12 @@ plt.legend()
 plt.show()
 
 # 예측된 발전량과 실제 발전량의 비율 계산
-prediction_ratio = yhat_original / train_y_actual_values
+prediction_ratio = train_y_actual_values/yhat_original
+prediction_ratio[np.isinf(prediction_ratio)] = 0 # inf값 전부 0으로 날려버림(의미없음 어차피)
+prediction_ratio[np.abs(prediction_ratio) >= 20] = 0
+
+split_ratio = np.array_split(prediction_ratio, 24)
+final_weight = pd.DataFrame({'Hour': list(range(24)), 'Average_Ratio': [np.abs.mean(x) for x in split_ratio]})
 
 # 비율을 시각화
 plt.figure(figsize=(15, 6))
@@ -137,3 +96,4 @@ plt.axhline(y=1, color='r', linestyle='--', label='Perfect Prediction (Ratio = 1
 plt.legend()
 plt.title("Prediction Ratio")
 plt.show()
+print(final_weight)

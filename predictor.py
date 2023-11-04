@@ -87,7 +87,7 @@ def _10predictor():
     model.add(Dense(1))
     model.compile(loss='mse', optimizer='adam')
 
-    history = model.fit(train_x_reshaped, train_y_scaled, epochs=1000, batch_size=64,
+    history = model.fit(train_x_reshaped, train_y_scaled, epochs=300, batch_size=32,
                         validation_data=(test_x_reshaped, test_y_scaled), verbose=2, shuffle=False)
 
     yhat = model.predict(test_x_reshaped)
@@ -114,8 +114,7 @@ def _10predictor():
     pred = pred.tolist()
     pred = [item for sublist in pred for item in sublist]
     # 사이트에서 올려준 post
-    #
-    #it._post_bids(pred)
+    it._post_bids(pred)
 
     print('a')
 def _17predictor():
@@ -189,7 +188,7 @@ def _17predictor():
     model.add(Dense(1))
     model.compile(loss='mse', optimizer='adam')
 
-    history = model.fit(train_x_reshaped, train_y_scaled, epochs=100, batch_size=32,
+    history = model.fit(train_x_reshaped, train_y_scaled, epochs=300, batch_size=32,
                         validation_data=(test_x_reshaped, test_y_scaled), verbose=2, shuffle=False)
 
     yhat = model.predict(test_x_reshaped)
@@ -213,7 +212,7 @@ def _17predictor():
     pred=pred.tolist()
     pred = [item for sublist in pred for item in sublist]
     # 사이트에서 올려준 post
-    #it._post_bids(pred)
+    it._post_bids(pred)
 
 
     # LSTM의 MAE 계산

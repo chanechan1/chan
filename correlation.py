@@ -1,34 +1,75 @@
+# import pandas as pd
+#
+# def _data_correlator():
+#
+#     # 데이터 로드
+#     train_x = pd.read_csv('weather_actual.csv')
+#     gens = pd.read_csv('gens.csv')
+#     test_x = pd.read_csv('weather_forecast.csv')
+#
+#     # 발전량 데이터 준비 (gens.csv에서 'amount' 열을 사용)
+#     gens = gens[['time', 'amount']]  # 'timestamp' 열은 시간대를 나타냅니다.
+#
+#     # train_x, test_x에 'timestamp' 열을 사용하여 gens 데이터와 결합
+#     train_x = pd.merge(train_x, gens, on='time')
+#     test_x = pd.merge(test_x, gens, on='time')
+#
+#     # 인덱스로 설정된 행들을 삭제하려면 해당 행들이 무엇인지 명확히 해야 합니다.
+#     # 여기서는 먼저 timestamp를 기준으로 정렬한 후 해당 인덱스를 제거합니다.
+#     train_x.sort_values('time', inplace=True)
+#     train_x.reset_index(drop=True, inplace=True)
+#
+#     # 여기서는 제공된 인덱스를 바탕으로 특정 행을 제거합니다.
+#     # 인덱스는 로드된 후의 DataFrame에서의 위치를 기준으로 해야 하며,
+#     # 제거해야 할 인덱스가 정확히 어떤 것인지 데이터를 확인한 후에 입력해야 합니다.
+#     train_x = train_x.drop(index=[11471, 11496, 10175, 10199], errors='ignore')  # 예시 인덱스
+#
+#     # 상관관계 계산
+#     train_correlation = train_x.corr()
+#     test_correlation = test_x.corr()
+#
+#     # 상관관계 출력
+#     print("실측 날씨 데이터와 발전량의 상관관계:")
+#     print(train_correlation)
+#     print("\n날씨 예보 데이터와 발전량의 상관관계:")
+#     print(test_correlation)
+#     print('a')
+# # 함수 실행
+# _data_correlator()
+
+
 import pandas as pd
+
 def _data_correlator():
+    # 데이터 로드
+    train_x = pd.read_csv('weather_actual.csv')
+    test_x = pd.read_csv('weather_forecast.csv')
+    pred = pd.read_csv('pred.csv')
 
-    #데이터 로드
-    train_x = pd.read_csv('weather_actual.csv', parse_dates=True)
-    train_y = pd.read_csv('gens.csv', parse_dates=True)
-    test_x = pd.read_csv('weather_forecast.csv', parse_dates=True)
-    test_y = pd.read_csv('gens.csv', parse_dates=True)
+    # 결과를 저장할 빈 데이터프레임 초기화
+    correlation_df = pd.DataFrame()
 
-     #####################json to pandas(dataframe)#####################
-    test_x = pd.DataFrame(test_x)
-    test_y = pd.DataFrame(test_y)
+    # pred.csv를 model_id로 그룹화하고 각 그룹에 대해 반복
+    for model_id, group in pred.groupby('model_id'):
+        # 모델별 예측 발전량만 추출
+        model_pred = group[['time', 'amount']]
 
-    #############################데이터 전처리##################################
-    train_x = train_x[train_x.columns[1:]]  # 날씨실측정보
-    train_y = train_y[train_y.columns[1:]]  # 발전실측정보
+        # train_x(실측 날씨 데이터)와 결합
+        merged_train = pd.merge(train_x, model_pred, on='time')
+        # test_x(날씨 예보 데이터)와 결합
+        merged_test = pd.merge(test_x, model_pred, on='time')
 
-    test_x = test_x[test_x.columns[2:]]  # 1에 대한 일기예보만 살리기위해 일단 없앰
-    #test_x = test_x.iloc[0:11616]
-    test_x = test_x.iloc[11616:]
-    test_y=test_y[test_y.columns[1:]]
-    train_x = train_x.drop(train_x.index[11471:11496])
-    train_x = train_x.drop(train_x.index[10175:10199])
-    test_x.reset_index(drop=True, inplace=True)
-    # train_x와 train_y를 결합 (여기서는 간단히 index 기준으로 결합)
-    combined_train = pd.concat([test_x, train_x], axis=1)
+        # 상관관계 계산
+        train_correlation = merged_train.corr()['amount'].sort_values(ascending=False).drop('amount')
+        test_correlation = merged_test.corr()['amount'].sort_values(ascending=False).drop('amount')
 
-    # 상관관계 계산
-    correlation_matrix = combined_train.corr()
+        # 상관관계를 데이터프레임에 추가
+        correlation_df[f'Model_{model_id+1}_train'] = train_correlation
+        correlation_df[f'Model_{model_id+1}_test'] = test_correlation
 
-    # 상관관계 출력
-    print(correlation_matrix)
-    #print(correlation_matrix.iloc[-1])
+    # 모든 모델의 상관도 결과를 출력
+    print(correlation_df)
+    print('a')
+# 함수 실행
 _data_correlator()
+
