@@ -55,10 +55,24 @@ def _get_weathers_forecasts10():
     weather_fcst_10 = _get(
         f"{_API_URL}/cmpt-2023/weathers-forecasts/{date}/{bid_round_10}"
     )
-    # 데이터프레임
-    weather_fcst_10 = pd.DataFrame(weather_fcst_10)
-    weather_fcst_10['time']=pd.to_datetime(weather_fcst_10['time'], utc=True)
+    # API 응답을 확인합니다.
+    response_data = _get(
+        f"{_API_URL}/cmpt-2023/weathers-forecasts/{date}/{bid_round_10}"
+    )
 
+    # 응답 데이터가 비어 있는지 확인합니다.
+    if not response_data:
+        print("API로부터 데이터를 받아오지 못했습니다.")
+        return None
+
+    # 'time' 필드가 있는지 확인합니다.
+    if 'time' not in response_data[0]:
+        print("'time' 필드가 API 응답에 없습니다.")
+        return None
+
+    # 데이터프레임으로 변환합니다.
+    weather_fcst_10 = pd.DataFrame(response_data)
+    weather_fcst_10['time'] = pd.to_datetime(weather_fcst_10['time'], utc=True)
     seoul_tz = pytz.timezone('Asia/Seoul')
     weather_fcst_10['time'] = weather_fcst_10['time'].dt.tz_convert(seoul_tz)
 
