@@ -1,4 +1,6 @@
 import pandas as pd
+
+    #상관도 파악
 def _data_correlator():
 
     #데이터 로드
@@ -19,8 +21,6 @@ def _data_correlator():
     #test_x = test_x.iloc[0:11616]
     test_x = test_x.iloc[11616:]
     test_y=test_y[test_y.columns[1:]]
-    train_x = train_x.drop(train_x.index[11471:11496])
-    train_x = train_x.drop(train_x.index[10175:10199])
     test_x.reset_index(drop=True, inplace=True)
     # train_x와 train_y를 결합 (여기서는 간단히 index 기준으로 결합)
     combined_train = pd.concat([test_x, train_x], axis=1)

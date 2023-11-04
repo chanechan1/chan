@@ -11,6 +11,7 @@ import insentive as it
 from datetime import datetime
 import pytz
 
+#실제기상-실제발전 / 기상예보-실제발전
 def _10predictor():
     ##gen은 실제 발전량
     ##pred는 예측발전량

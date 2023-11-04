@@ -11,17 +11,8 @@ import insentive as it
 from datetime import datetime
 import pytz
 
-##이전자료는 train이고 실제 할거는 test임 api를 받아와서 돌려볼 거는 test에 해당, x(다양한 변수들과)는 주어지는 날씨량이고 y(실제 발전량)는 결과임
-##데이터 프레임으로 변환
-## observe -> gen
-## forecast -> gen_fcst
-
 def _10predictor():
-    ##gen은 실제 발전량
-    ##pred는 예측발전량
-    ## train을 조정해서 최적의 오차율 만들기
-    ## actual
-    ## train x -> train y(학습) 그럼 test x 넣으면 test y는?(예측)
+
     train_x = pd.read_csv('weather_actual.csv', parse_dates=True)  # 학습시킬것 날씨량 (실제 날씨)
     train_y = pd.read_csv('gens.csv', parse_dates=True)  # 학습시킬것 발전량 (실제 발전량)
     test_x = it._get_weathers_forecasts10()  ##api 내일 일기예보 가져옴
@@ -31,10 +22,8 @@ def _10predictor():
     # #####################json to pandas(dataframe)#####################
     # test_x = pd.DataFrame(test_x)
     # test_y = pd.DataFrame(test_y)
-    ##test_x = pd.read_csv('weather_forecast.csv', index_col=1, parse_dates=True) api에서 내일 따올 기상예보
-    ##test_y = pd.read_csv('pred.csv', parse_dates=True)
-
-
+    # test_x = pd.read_csv('weather_forecast.csv', index_col=1, parse_dates=True) api에서 내일 따올 기상예보
+    # test_y = pd.read_csv('pred.csv', parse_dates=True)
 
     #############################데이터 전처리##################################
     train_x = train_x[train_x.columns[1:]]  # 날씨실측정보
@@ -44,7 +33,6 @@ def _10predictor():
     test_x = test_x[test_x.columns[1:]]  # 1에 대한 일기예보만 살리기위해 일단 없앰
 
     #####################발전예측량에 대해서 어느모델에 대해 하는지###################################
-    # 모델 예측량에따라서 산술 평균을 낼지, 가중치를 둬서 낼지, 아니면 하나만 선택해서 할지 고민 ㄱㄱ
     test_y1 = test_y[test_y.columns[1:2]]
     test_y2 = test_y[test_y.columns[2:3]]
     test_y3 = test_y[test_y.columns[3:4]]
@@ -60,7 +48,7 @@ def _10predictor():
     # test_y=test_y[test_y.columns[3:]] #amount만 남기고
     # test_y=test_y.iloc[2::5]
 
-    # 정규화
+    # scaling
     scaler_x = MinMaxScaler()
     scaler_y = MinMaxScaler()
 
@@ -80,7 +68,6 @@ def _10predictor():
     train_x_reshaped = train_x_scaled.reshape((train_x_scaled.shape[0], 1, train_x_scaled.shape[1]))
     test_x_reshaped = test_x_scaled.reshape((test_x_scaled.shape[0], 1, test_x_scaled.shape[1]))
 
-    #
     input_shape = (1, train_x_scaled.shape[1])
 
     model = Sequential()
@@ -121,8 +108,7 @@ def _10predictor():
 
     print('a')
 def _17predictor():
-    ##gen은 실제 발전량
-    ##pred는 예측발전량
+
     train_x = pd.read_csv('weather_actual.csv', parse_dates=True)  # 학습시킬것 날씨량
     train_y = pd.read_csv('gens.csv', parse_dates=True)  # 학습시킬것 발전량
     test_x = it._get_weathers_forecasts17()  ##api 로 내일 데이터 따오기
@@ -142,7 +128,6 @@ def _17predictor():
     test_x = test_x[test_x.columns[1:]]  # 1에 대한 일기예보만 살리기위해 일단 없앰
 
     #####################발전예측량에 대해서 어느모델에 대해 하는지###################################
-    # 모델 예측량에따라서 산술 평균을 낼지, 가중치를 둬서 낼지, 아니면 하나만 선택해서 할지 고민 ㄱㄱ
 
     test_y1 = test_y[test_y.columns[1:2]]
     test_y2 = test_y[test_y.columns[2:3]]
