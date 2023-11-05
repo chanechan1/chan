@@ -87,7 +87,7 @@ def _10predictor():
     model.add(Dense(1))
     model.compile(loss='mse', optimizer='adam')
 
-    history = model.fit(train_x_reshaped, train_y_scaled, epochs=300, batch_size=32,
+    history = model.fit(train_x_reshaped, train_y_scaled, epochs=100, batch_size=32,
                         validation_data=(test_x_reshaped, test_y_scaled), verbose=2, shuffle=False)
 
     yhat = model.predict(test_x_reshaped)
@@ -188,7 +188,7 @@ def _17predictor():
     model.add(Dense(1))
     model.compile(loss='mse', optimizer='adam')
 
-    history = model.fit(train_x_reshaped, train_y_scaled, epochs=300, batch_size=32,
+    history = model.fit(train_x_reshaped, train_y_scaled, epochs=100, batch_size=32,
                         validation_data=(test_x_reshaped, test_y_scaled), verbose=2, shuffle=False)
 
     yhat = model.predict(test_x_reshaped)
