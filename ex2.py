@@ -16,7 +16,7 @@ tomorrow = today + timedelta(days=1)
 tomorrow_formatted = tomorrow.strftime('%Y-%m-%d')
 
 
-date = tomorrow_formatted
+date = "2023-10-02"
 
 bid_round = 1
 weather_fcst = requests.get(f'https://research-api.solarkim.com/cmpt-2023/weathers-forecasts/{date}/{bid_round}', headers={

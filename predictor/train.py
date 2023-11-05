@@ -29,8 +29,16 @@ def _10predictor():
 
     ##########################
     test_x = test_x[test_x.columns[2:]]  # 1에 대한 일기예보만 살리기위해 일단 없앰
-    test_x = test_x.iloc[:11616]
+    row_to_drop = range(3500,6900)
+    test_x = test_x.drop(row_to_drop)
+
+    train_x = train_x.drop(row_to_drop)
+    train_y = train_y.drop(row_to_drop)
+
+    test_x = test_x.iloc[:8216]
+
     test_y=test_y[test_y.columns[1:]]
+    test_y = test_y.drop(row_to_drop)
 
     # 정규화
     scaler_x = MinMaxScaler()
@@ -73,23 +81,40 @@ def _10predictor():
     plt.plot(yhat_original, label='Predicted')
     plt.legend()
     plt.title("10")
-    A = list(range(24))
-    plt.xticks((A))
+
     plt.grid
 
     plt.show()
 
     # 예측량에대한 리스트
     pred = yhat_original
-    pred=pred.tolist()
+    ##pred=pred.tolist()
     pred = [item for sublist in pred for item in sublist]
     # 사이트에서 올려준 post
-    it._post_bids(pred)
+    ##it._post_bids(pred)
 
 
     # LSTM의 MAE 계산
     mae_lstm = it.calculate_mae(test_y_original, yhat_original)  # actual,predict
 
     print("MAE:", mae_lstm)
+    return mae_lstm
 
 _10predictor()
+
+
+
+
+# for i in range(13):
+#     train_x = pd.read_csv('weather_actual.csv', parse_dates=True)  # 학습시킬것 날씨량
+#     test_x = pd.read_csv('weather_forecast.csv', parse_dates=True)
+#     #####################json to pandas(dataframe)#####################
+#     test_x = pd.DataFrame(test_x)
+#
+#     #############################데이터 전처리##################################
+#     train_x = train_x[train_x.columns[1:]]  # 날씨실측정보
+#     test_x = test_x[test_x.columns[i+2:i + 3]]
+#     test_x=test_x.iloc[:11616]
+#     train_x = train_x[train_x.columns[i:i + 1]]
+#     mae=it.calculate_mae(train_x,test_x)
+#     print(mae)

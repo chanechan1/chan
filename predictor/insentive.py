@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import pytz
 from datetime import datetime, timedelta
+import matplotlib.pyplot as plt
 _API_URL = "https://research-api.solarkim.com"
 _API_KEY = API_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJaZlg3NGJObUNDUDhBZWI2elQ3MldoIiwiaWF0IjoxNjk4NDgxMTEzLCJleHAiOjE3MDAyMzMyMDAsInR5cGUiOiJhcGlfa2V5In0.EDbJYB23JVxxDjdn_TLBWUjq8-sV9iRVP4N8PUG3-9E'
   # https://o.solarkim.com/cmpt2023/result에서 확인할 수 있다.
@@ -32,26 +33,14 @@ def _post(url: str, data):
     """
     response = requests.post(url, data=json.dumps(data), **_AUTH_PARAM)
     return response.json()
-
-
 def _get_weathers_forecasts10():
-    """
-    기상데이터 일단위 기상예측 데이터 조회 (https://research-api.solarkim.com/docs#tag/Competition-2023/operation/get_weathers_forecasts_date_bid_round_cmpt_2023_weathers_forecasts__date___bid_round__get 참고)
-    """
-    # 오늘 날짜 구하기
     today = datetime.now()
-
-    # 오늘 날짜에 하루 더하기
     tomorrow = today + timedelta(days=1)
-
     # 날짜 형식 지정 (예: '2023-10-02')
     tomorrow_formatted = tomorrow.strftime('%Y-%m-%d')
-
-    date = tomorrow_formatted
+    date = '2023-11-05'
 
     bid_round_10 = 1
-
-
     weather_fcst_10 = _get(
         f"{_API_URL}/cmpt-2023/weathers-forecasts/{date}/{bid_round_10}"
     )
@@ -105,7 +94,7 @@ def _get_gen_forecasts10():
     # 날짜 형식 지정 (예: '2023-10-02')
     tomorrow_formatted = tomorrow.strftime('%Y-%m-%d')
 
-    date = tomorrow_formatted
+    date = '2023-11-05'
 
     bid_round_10 = 1
 
@@ -154,12 +143,22 @@ def _get_bids_result():
     """
     더쉐어 예측 모델의 예측 결과 조회 (https://research-api.solarkim.com/docs#tag/Competition-2023/operation/get_bids_result_date_cmpt_2023_bid_results__date__get 참고)
     """
-    date = "2023-10-23"
+    # today = datetime.now()
+    #
+    # # 오늘 날짜에 하루 더하기
+    # tomorrow = today + timedelta(days=1)
+    #
+    # # 날짜 형식 지정 (예: '2023-10-02')
+    # tomorrow_formatted = tomorrow.strftime('%Y-%m-%d')
+    # date = tomorrow_formatted
 
-
+    date="2023-11-02"
     bid_results = _get(f"{_API_URL}/cmpt-2023/bid-results/{date}")
+    bid_results=pd.DataFrame(bid_results)
+
     print(bid_results)
 
+    return bid_results
 
 def _post_bids(amounts):
     """
@@ -167,20 +166,19 @@ def _post_bids(amounts):
     """
     # NumPy 배열을 파이썬 리스트로 변환
 
-
-    #success = _post(f"{_API_URL}/cmpt-2023/bids", amounts)
-    success = requests.post(f'https://research-api.solarkim.com/cmpt-2023/bids', data=json.dumps(amounts), headers={
-        'Authorization': f'Bearer {API_KEY}'
-    }).json()
+    amounts=[0 if x<0 else x for x in amounts]
+    success = _post(f"{_API_URL}/cmpt-2023/bids", amounts)
+    # success = requests.post(f'https://research-api.solarkim.com/cmpt-2023/bids', data=json.dumps(amounts), headers={
+    #     'Authorization': f'Bearer {API_KEY}'
+    # }).json()
 
     print(amounts)
     print(success)
 
 def _run():
+    a=_get_bids_result()
+    b=_get_gen_forecasts10()
 
-    # _get_weathers_forecasts10()
-    _get_weathers_observeds()
-    _get_bids_result()
     print('a')
 def calculate_mae(actual, predicted):
     return np.mean(np.abs(actual - predicted))
