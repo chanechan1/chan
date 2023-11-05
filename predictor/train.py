@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import requests
 import json
 import param as pa
-import insentive as it
+import functions as it
 from datetime import datetime
 import pytz
 

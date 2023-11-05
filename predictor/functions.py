@@ -175,6 +175,14 @@ def _get_bids_result():
     print(bid_results)
 
 
+def create_dataset(X, y, time_steps=1):
+    Xs, ys = [], []
+    for i in range(len(X) - time_steps):
+        v = X[i:(i + time_steps), :]
+        Xs.append(v)
+        ys.append(y[i + time_steps])
+    return np.array(Xs), np.array(ys)
+
 def _post_bids(amounts):
     """
     일단위 태양광 발전량 입찰. 시간별 24개의 발전량을 입찰하며 API가 호출된 시간에 따라 입찰 대상일이 결정된다.
