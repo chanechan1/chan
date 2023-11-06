@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import pytz
 from datetime import datetime, timedelta
+import matplotlib.pyplot as plt
 _API_URL = "https://research-api.solarkim.com"
 _API_KEY = API_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJaZlg3NGJObUNDUDhBZWI2elQ3MldoIiwiaWF0IjoxNjk4NDgxMTEzLCJleHAiOjE3MDAyMzMyMDAsInR5cGUiOiJhcGlfa2V5In0.EDbJYB23JVxxDjdn_TLBWUjq8-sV9iRVP4N8PUG3-9E'
   # https://o.solarkim.com/cmpt2023/result에서 확인할 수 있다.
@@ -32,47 +33,16 @@ def _post(url: str, data):
     """
     response = requests.post(url, data=json.dumps(data), **_AUTH_PARAM)
     return response.json()
-
-
-def _get_weathers_forecasts10():
-    """
-    기상데이터 일단위 기상예측 데이터 조회 (https://research-api.solarkim.com/docs#tag/Competition-2023/operation/get_weathers_forecasts_date_bid_round_cmpt_2023_weathers_forecasts__date___bid_round__get 참고)
-    """
-    # 오늘 날짜 구하기
-    today = datetime.now()
-
-    # 오늘 날짜에 하루 더하기
-    tomorrow = today + timedelta(days=1)
-
-    # 날짜 형식 지정 (예: '2023-10-02')
-    tomorrow_formatted = tomorrow.strftime('%Y-%m-%d')
-
-    date = tomorrow_formatted
+def _get_weathers_forecasts10(date):
 
     bid_round_10 = 1
-
-
     weather_fcst_10 = _get(
         f"{_API_URL}/cmpt-2023/weathers-forecasts/{date}/{bid_round_10}"
     )
-    # API 응답을 확인합니다.
-    response_data = _get(
-        f"{_API_URL}/cmpt-2023/weathers-forecasts/{date}/{bid_round_10}"
-    )
+    # 데이터프레임
+    weather_fcst_10 = pd.DataFrame(weather_fcst_10)
+    weather_fcst_10['time']=pd.to_datetime(weather_fcst_10['time'], utc=True)
 
-    # 응답 데이터가 비어 있는지 확인합니다.
-    if not response_data:
-        print("API로부터 데이터를 받아오지 못했습니다.")
-        return None
-
-    # 'time' 필드가 있는지 확인합니다.
-    if 'time' not in response_data[0]:
-        print("'time' 필드가 API 응답에 없습니다.")
-        return None
-
-    # 데이터프레임으로 변환합니다.
-    weather_fcst_10 = pd.DataFrame(response_data)
-    weather_fcst_10['time'] = pd.to_datetime(weather_fcst_10['time'], utc=True)
     seoul_tz = pytz.timezone('Asia/Seoul')
     weather_fcst_10['time'] = weather_fcst_10['time'].dt.tz_convert(seoul_tz)
 
@@ -80,15 +50,10 @@ def _get_weathers_forecasts10():
 
 
     return weather_fcst_10
-def _get_weathers_forecasts17():
+def _get_weathers_forecasts17(date):
     """
     기상데이터 일단위 기상예측 데이터 조회 (https://research-api.solarkim.com/docs#tag/Competition-2023/operation/get_weathers_forecasts_date_bid_round_cmpt_2023_weathers_forecasts__date___bid_round__get 참고)
     """
-    # 오늘 날짜 구하기
-    today = datetime.now()
-
-
-    date = today.strftime('%Y-%m-%d')
 
     bid_round_17 = 2
     weather_fcst_17 = _get(
@@ -104,23 +69,10 @@ def _get_weathers_forecasts17():
 
     return weather_fcst_17
 
-def _get_gen_forecasts10():
+def _get_gen_forecasts10(date):
     """
     더쉐어 예측 모델의 예측 발전량 조회, 입찰대상일의 5가지 예측 모델의 예측 발전량 값을 취득한다 (https://research-api.solarkim.com/docs#tag/Competition-2023/operation/get_gen_forecasts_date_cmpt_2023_gen_forecasts__date___bid_round__get 참고)
     """
-
-
-    # 오늘 날짜 구하기
-    today = datetime.now()
-
-    # 오늘 날짜에 하루 더하기
-    tomorrow = today + timedelta(days=1)
-
-    # 날짜 형식 지정 (예: '2023-10-02')
-    tomorrow_formatted = tomorrow.strftime('%Y-%m-%d')
-
-    date = tomorrow_formatted
-
     bid_round_10 = 1
 
     gen_fcst_10 = _get(f"{_API_URL}/cmpt-2023/gen-forecasts/{date}/{bid_round_10}")
@@ -135,13 +87,10 @@ def _get_gen_forecasts10():
     print(gen_fcst_10)
 
     return gen_fcst_10
-def _get_gen_forecasts17():
+def _get_gen_forecasts17(date):
     """
     더쉐어 예측 모델의 예측 발전량 조회, 입찰대상일의 5가지 예측 모델의 예측 발전량 값을 취득한다 (https://research-api.solarkim.com/docs#tag/Competition-2023/operation/get_gen_forecasts_date_cmpt_2023_gen_forecasts__date___bid_round__get 참고)
     """
-    # 오늘 날짜 구하기
-    today = datetime.now()
-    date = today.strftime('%Y-%m-%d')
     bid_round_17 = 2
 
     gen_fcst_17 = _get(f"{_API_URL}/cmpt-2023/gen-forecasts/{date}/{bid_round_17}")
@@ -155,33 +104,25 @@ def _get_gen_forecasts17():
     return gen_fcst_17
 
 
-def _get_weathers_observeds():
+def _get_weathers_observeds(date):
     """
     기상데이터 일단위 기상관측데이터 조회, 당일에 대해 조회하면 현재시간 기준 24시간치 조회 (https://research-api.solarkim.com/docs#tag/Competition-2023/operation/get_weathers_observeds_date_cmpt_2023_weathers_observeds__date__get 참고)
     """
-    date = "2023-10-23"
+
     weather_obsv = _get(f"{_API_URL}/cmpt-2023/weathers-observeds/{date}")
     print(weather_obsv)
 
 
-def _get_bids_result():
+def _get_bids_result(date):
     """
     더쉐어 예측 모델의 예측 결과 조회 (https://research-api.solarkim.com/docs#tag/Competition-2023/operation/get_bids_result_date_cmpt_2023_bid_results__date__get 참고)
     """
-    date = "2023-10-23"
-
-
     bid_results = _get(f"{_API_URL}/cmpt-2023/bid-results/{date}")
+    bid_results=pd.DataFrame(bid_results)
+
     print(bid_results)
 
-
-def create_dataset(X, y, time_steps=1):
-    Xs, ys = [], []
-    for i in range(len(X) - time_steps):
-        v = X[i:(i + time_steps), :]
-        Xs.append(v)
-        ys.append(y[i + time_steps])
-    return np.array(Xs), np.array(ys)
+    return bid_results
 
 def _post_bids(amounts):
     """
@@ -191,13 +132,16 @@ def _post_bids(amounts):
 
 
     success = _post(f"{_API_URL}/cmpt-2023/bids", amounts)
+    # success = requests.post(f'https://research-api.solarkim.com/cmpt-2023/bids', data=json.dumps(amounts), headers={
+    #     'Authorization': f'Bearer {API_KEY}'
+    # }).json()
+
     print(amounts)
     print(success)
 
 def _run():
 
-    # _get_weathers_forecasts10()
-    -_get_weathers_observeds()
+    print('a')
 def calculate_mae(actual, predicted):
     return np.mean(np.abs(actual - predicted))
 

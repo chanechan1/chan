@@ -78,8 +78,8 @@ def _17predictor():
 
     train_x = pd.read_csv('weather_actual.csv', parse_dates=True)  # 학습시킬것 날씨량
     train_y = pd.read_csv('gens.csv', parse_dates=True)  # 학습시킬것 발전량
-    test_x = it._get_weathers_forecasts17()  ##api 로 내일 데이터 따오기
-    test_y = it._get_gen_forecasts17()  ##api 로 내일
+    test_x = func._get_weathers_forecasts17()  ##api 로 내일 데이터 따오기
+    test_y = func._get_gen_forecasts17()  ##api 로 내일
 
     #####################json to pandas(dataframe)#####################
     test_x = pd.DataFrame(test_x)
@@ -161,9 +161,9 @@ def _17predictor():
     pred=pred.tolist()
     pred = [item for sublist in pred for item in sublist]
     # 사이트에서 올려준 post
-    it._post_bids(pred)
+    func._post_bids(pred)
     # LSTM의 MAE 계산
-    mae_lstm = it.calculate_mae(test_y_original, yhat_original)  # actual,predict
+    mae_lstm = func.calculate_mae(test_y_original, yhat_original)  # actual,predict
 
     print("MAE:", mae_lstm)
 
