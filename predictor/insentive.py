@@ -11,7 +11,41 @@ _API_KEY = API_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJaZlg3NGJObUN
   # https://o.solarkim.com/cmpt2023/result에서 확인할 수 있다.
 _AUTH_PARAM = {"headers": {"Authorization": f"Bearer {_API_KEY}"}}
 
+def calc_profit(actual_gens: list[float], forecast_gens: list[float]):
+    CAPACITY = 99.0
+    facility_utilization_rate = [actual / CAPACITY for actual in actual_gens]
 
+    filter_facility_utilization_rate = [
+        utilization >= 0.1 for utilization in facility_utilization_rate
+    ]
+
+    errors = [
+        abs(forecast - actual) / CAPACITY * 100
+        for forecast, actual in zip(forecast_gens, actual_gens)
+    ]
+
+    target_errors = [
+        error
+        for error, is_filtered in zip(errors, filter_facility_utilization_rate)
+        if is_filtered
+    ]
+    target_actual_gens = [
+        actual
+        for actual, is_filtered in zip(
+            actual_gens, filter_facility_utilization_rate
+        )
+        if is_filtered
+    ]
+
+    profits = [0] * len(target_actual_gens)
+
+    for i, error in enumerate(target_errors):
+        if error <= 6:
+            profits[i] = target_actual_gens[i] * 4
+        elif 6 < error <= 8:
+            profits[i] = target_actual_gens[i] * 3
+
+    return profits
 def _get(url: str):
     """
     주어진 url의 리소스를 조회한다.
@@ -110,8 +144,10 @@ def _get_weathers_observeds(date):
     """
 
     weather_obsv = _get(f"{_API_URL}/cmpt-2023/weathers-observeds/{date}")
-    print(weather_obsv)
+    weather_obsv = pd.DataFrame(weather_obsv)
 
+    print(weather_obsv)
+    return weather_obsv
 
 def _get_bids_result(date):
     """
@@ -140,7 +176,8 @@ def _post_bids(amounts):
     print(success)
 
 def _run():
-
+    a=_get_weathers_forecasts10('2023-11-06')
+    b=_get_weathers_observeds('2023-11-07')
     print('a')
 def calculate_mae(actual, predicted):
     return np.mean(np.abs(actual - predicted))
