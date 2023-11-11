@@ -23,7 +23,7 @@ def get_daily_amounts(date):
     amounts.append(0)
     return amounts
 
-def error_predictor10(date,loss):
+def error_predictor10(c,d):
     # test_x = it._get_weathers_forecasts10(date)  ##api 로 내일 데이터 따오기
     # test_x = test_x[test_x.columns[1:]]  ##시간 땐거
     ##error_data = model.predict(test_x)  ## 기상정보를 넣었을때에 발생되는 오차
@@ -43,13 +43,13 @@ def error_predictor10(date,loss):
 
     # 제약 조건 함수들
     def constraint1(weights, errors):
-        return 6 - np.dot(weights, errors)
+        return 25 - np.dot(weights, errors)
 
     def constraint2(weights, errors):
-        return np.dot(weights, errors) + 6
+        return np.dot(weights, errors) +25
 
     def constraint3(weights):
-        return 1.15 - sum(weights)
+        return 1.1- sum(weights)
 
     # 각 행에 대해 최적화를 수행하는 루프
     for errors in error_data:
@@ -57,7 +57,7 @@ def error_predictor10(date,loss):
         initial_weights = np.full(len(errors), 1 / len(errors))
 
         # bounds를 각 행의 오차 수에 맞게 설정
-        bounds = [(0.11, 1) for _ in range(len(errors))]
+        bounds = [(0.06, 1.2) for _ in range(len(errors))]
 
         # 제약 조건
         cons = [{'type': 'ineq', 'fun': constraint1, 'args': (errors,)},
@@ -88,14 +88,14 @@ def error_predictor10(date,loss):
     pred = predamount.values.tolist()
     pred = [item[0] for item in pred]
     return pred
-def error_predictor17(date,loss):
+def error_predictor17(c,d):
     # test_x = it._get_weathers_forecasts17(date)  ##api 로 내일 데이터 따오기
     # test_x = test_x[test_x.columns[1:]]  ##시간 땐거
     # error_data = model.predict(test_x)  ## 기상정보를 넣었을때에 발생되는 오차
 
     test_x = pd.read_csv('evening_forecast.csv', parse_dates=True)
     test_x = test_x[test_x.columns[1:14]]
-    error_data = ld.load_and_predict_model17(test_x)
+    error_data = ld.load_and_predict_model10(test_x)
 
     ##########나온 오차값들로 최적의 가중치를 조정하는 부분################
     # 결과를 저장할 리스트
@@ -108,13 +108,13 @@ def error_predictor17(date,loss):
 
     # 제약 조건 함수들
     def constraint1(weights, errors):
-        return 6- np.dot(weights, errors)
+        return 25- np.dot(weights, errors)
 
     def constraint2(weights, errors):
-        return np.dot(weights, errors) + 6
+        return np.dot(weights, errors) + 25
 
     def constraint3(weights):
-        return 1.14 - sum(weights)
+        return 1.11- sum(weights)
 
     # 각 행에 대해 최적화를 수행하는 루프
     for errors in error_data:
@@ -122,7 +122,7 @@ def error_predictor17(date,loss):
         initial_weights = np.full(len(errors), 1 / len(errors))
 
         # bounds를 각 행의 오차 수에 맞게 설정
-        bounds = [(0.09, 1) for _ in range(len(errors))]
+        bounds = [(0.02, 1.2) for _ in range(len(errors))]
 
         # 제약 조건
         cons = [{'type': 'ineq', 'fun': constraint1, 'args': (errors,)},
@@ -153,77 +153,85 @@ def error_predictor17(date,loss):
     pred = predamount.values.tolist()
     pred = [item[0] for item in pred]
     return pred
-# a=get_daily_amounts('2023-11-03')
-# #############그림그려서 알아보기###############
-# pred1=error_predictor10('2023-11-08','huber_loss')
-# pred2=error_predictor17('2023-11-08','huber_loss')
-# predamount =[(x + y) / 2 for x, y in zip(pred1, pred2)]
-# predamount = [round(num, 2) for num in predamount]
-#error = [(a - b) for a, b in zip(get_daily_amounts('2023-11-03'), predamount)]
-#print(error)
-# x = list(range(24))
-# plt.figure(figsize=(10, 6))
-# #그래프에 데이터 포인트와 선을 그립니다.
-# plt.plot(x, pred1 ,marker='o',color='orange')
-# plt.plot(x,pred2 , marker='o',color='red')
-# plt.plot(x,predamount,marker='o')
-# #plt.plot(x,error,  marker ='o',color = 'black')
-# for i, value in enumerate(predamount):
-#     plt.text(x[i], value, str(value), fontsize=8, verticalalignment='bottom', horizontalalignment='right')
-# plt.axhline(y=6, color='blue', linestyle='-', label='y=6')
-# plt.axhline(y=8, color='g', linestyle='-', label='y=8')
-# plt.axhline(y=-6, color='blue', linestyle='-', label='y=-6')
-# plt.axhline(y=-8, color='g', linestyle='-', label='y=-8')
-# plt.title('Predictions Plot')
-# plt.xlabel('Index')
-# plt.ylabel('Value')
-# # 그리드를 표시합니다.
-# plt.grid(True)
-# it._post_bids(pred1)
-# 그래프를 화면에 보여줍니다.
-#plt.show()
+def run(c,d):
+    q = pd.read_csv('gens_by_sugi.csv', parse_dates=True)
+    q = q[q.columns[1:]]
+    q = q.values.tolist()
+    q = [item[0] for item in q]
 
-c=pd.read_csv('gens_by_sugi.csv',parse_dates=True)
-c=c[c.columns[1:]]
-c=c.values.tolist()
-c = [item[0] for item in c]
+    pred1 = error_predictor10(c,d)
+    pred2 = error_predictor17(c,d)
+    predamount = [(x + y) / 2 for x, y in zip(pred1, pred2)]
+    pred1 = [round(num, 1) for num in pred1]
+    pred2 = [round(num, 1) for num in pred2]
+    predamount = [round(num, 1) for num in predamount]
+    a = it.calc_profit(q, pred1)
+    b = it.calc_profit(q, pred2)
+    d = it.calc_profit(q, q)
+    e = it.calc_profit(q, predamount)
+    x = list(range(len(q)))
+    plt.figure(figsize=(22, 14))
+    for x_value in x:
+        plt.axvline(x=x_value, color='lightgray', linestyle='--', linewidth=0.5)
+    plt.plot(x, q, marker='o', color='black')
+    #plt.plot(x, pred1, marker='o', color='green')
+    #plt.plot(x, pred2, marker='o', color='red')
+    plt.plot(x,predamount,marker='o')
 
-pred1=error_predictor10('2','2')
-pred2=error_predictor17('2','2')
-predamount =[(x + y) / 2 for x, y in zip(pred1, pred2)]
-pred1 = [round(num, 1) for num in pred1]
-pred2 = [round(num, 1) for num in pred2]
-predamount = [round(num, 1) for num in predamount]
-a=it.calc_profit(c,pred1)
-b=it.calc_profit(c,pred2)
-d=it.calc_profit(c,predamount)
-x = list(range(len(c)))
-plt.figure(figsize=(22, 14))
-for x_value in x:
-    plt.axvline(x=x_value, color='lightgray', linestyle='--', linewidth=0.5)
-plt.plot(x,c,marker='o',color='black')
-# plt.plot(x,pred1,marker='o',color='green')
-# plt.plot(x,pred2,marker='o',color='red')
-plt.plot(x,predamount,marker='o')
+    for i, value in enumerate(predamount):
+        plt.text(x[i], value, str(value), fontsize=8, verticalalignment='bottom', horizontalalignment='right')
+    for i, value in enumerate(q):
+        plt.text(x[i], value, str(value), fontsize=8, verticalalignment='bottom', horizontalalignment='right')
+    plt.title('Predictions Plot')
+    plt.xlabel('Index')
+    plt.ylabel('Value')
+    # 그리드를 표시합니다.
+    plt.grid(True)
 
-for i, value in enumerate(predamount):
-    plt.text(x[i], value, str(value), fontsize=8, verticalalignment='bottom', horizontalalignment='right')
-for i, value in enumerate(c):
-   plt.text(x[i], value, str(value), fontsize=8, verticalalignment='bottom', horizontalalignment='right')
-plt.title('Predictions Plot')
-plt.xlabel('Index')
-plt.ylabel('Value')
-# 그리드를 표시합니다.
-plt.grid(True)
+    # 그래프를 화면에 보여줍니다.
+    plt.show()
+    g=it.calculate_mae(q,pred1)
+    f=it.calculate_mae(q,pred2)
+    h = it.calculate_mae(q, predamount)
 
-# 그래프를 화면에 보여줍니다.
-plt.show()
-print(d)
-a=sum(a)
-b=sum(b)
-d=sum(d)
-print(a)
-print(b)
-print(d)
+    print(d)
+    print(e)
+    a = sum(a)
+    b = sum(b)
+    d = sum(d)
+    print(a)
+    print(b)
+    #
+    e=sum(e)
+    print(e)
+    # print(d)
+    print(g)
+    print(f)
+    print(h)
+    print(d)
+    return e
+
+# range_a = range(11)  # 0 ~ 10
+# range_b = range(20)  # 0 ~ 15
+range_c = range(10)  # 0 ~ 10
+range_d = range(15)  # 0 ~ 15
+#
+# # 최댓값과 그때의 인덱스를 저장할 변수
+max_value = float('+inf')
+max_indices = None
+#
+# # 모든 조합에 대해 run 함수 실행
+# for a in range_a:
+#     for b in range_b:
+# for c in range_c:
+#     for d in range_d:
+#         result = run(c,d)
+#         if result < max_value:
+#             max_value = result
+#             max_indices = (c,d)
+# print(max_value)
+# print(max_indices)
 
 
+
+run(1,1)

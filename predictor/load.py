@@ -10,7 +10,7 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.callbacks import EarlyStopping
 from keras.models import load_model
 
-# 학습률을 점진적으로 감소시키는 함수
+#학습률을 점진적으로 감소시키는 함수
 def train_and_save_model10():
 
     a = pd.read_csv('pred.csv', parse_dates=True)  #
@@ -44,7 +44,7 @@ def train_and_save_model10():
         Dense(5, activation='linear')
     ])
     optimizer = Adam(learning_rate=0.0001)
-    model.compile(loss='mean_squared_error', optimizer=optimizer, metrics=['mean_squared_error'])
+    model.compile(loss='mae', optimizer=optimizer, metrics=['mae'])
     early_stopping = EarlyStopping(monitor='val_loss', patience=20, restore_best_weights=True)
     model.fit(
         train_x, train_y,
@@ -55,7 +55,7 @@ def train_and_save_model10():
         callbacks=[early_stopping]
     )
     # 모델의 가중치를 파일로 저장
-    model.save('fffinal_10')
+    model.save('maefinal')
 def train_and_save_model17():
 
     a = pd.read_csv('pred.csv', parse_dates=True)  #
@@ -80,7 +80,7 @@ def train_and_save_model17():
         Dense(5, activation='linear')
     ])
     optimizer = Adam(learning_rate=0.0001)
-    model.compile(loss='mean_squared_error', optimizer=optimizer, metrics=['mean_squared_error'])
+    model.compile(loss='mae', optimizer=optimizer, metrics=['mae'])
     early_stopping = EarlyStopping(monitor='val_loss', patience=20, restore_best_weights=True)
     model.fit(
         train_x, train_y,
@@ -91,19 +91,20 @@ def train_and_save_model17():
         callbacks=[early_stopping]
     )
     # 모델의 가중치를 파일로 저장
-    model.save('final_17')
+    model.save('11568mae_17')
 def load_and_predict_model10(test_x):
     # 저장된 모델의 가중치를 로드
-    model = load_model('final_10')##저장됨
+    model = load_model('huberfinal')##저장됨
     # 새로운 데이터로 예측 수행
     error_data = model.predict(test_x)
     return error_data
 def load_and_predict_model17(test_x):
     # 저장된 모델의 가중치를 로드
-    model = load_model('final_17')##저장됨
+    model = load_model('11568mae_17')##저장됨
     # 새로운 데이터로 예측 수행
     error_data = model.predict(test_x)
     return error_data
+
 # def train_and_save_model10():
 #
 #     a = pd.read_csv('pred.csv', parse_dates=True)  #
@@ -127,16 +128,16 @@ def load_and_predict_model17(test_x):
 #         Dense(5, activation='linear')
 #     ])
 #     optimizer = Adam(learning_rate=0.0001)
-#     model.compile(loss='mean_squared_error', optimizer=optimizer, metrics=['mean_squared_error'])
+#     model.compile(loss='mae', optimizer=optimizer, metrics=['mae'])
 #     early_stopping = EarlyStopping(monitor='val_loss', patience=20, restore_best_weights=True)
 #     model.fit(
 #         train_x, train_y,
-#         epochs=300,
+#         epochs=600,
 #         batch_size=32,
 #         verbose=1,
 #         validation_data=(val_x, val_y),
 #         callbacks=[early_stopping]
 #     )
 #     # 모델의 가중치를 파일로 저장
-#     model.save('final_10')
+#     model.save('11568mae_10')
 #train_and_save_model10()

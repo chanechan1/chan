@@ -176,10 +176,12 @@ def _post_bids(amounts):
     print(success)
 
 def _run():
-    a=_get_weathers_forecasts10('2023-11-06')
-    b=_get_weathers_observeds('2023-11-07')
-    print('a')
+    a=_get_weathers_forecasts10('2023-11-11')
+    b=_get_weathers_forecasts17('2023-11-11')
+    print(a)
 def calculate_mae(actual, predicted):
+    actual = np.array(actual)
+    predicted = np.array(predicted)
     return np.mean(np.abs(actual - predicted))
 def calc_profit(actual_gens: list[float], forecast_gens: list[float]):
     CAPACITY = 99.0
