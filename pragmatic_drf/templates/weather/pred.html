@@ -1,0 +1,39 @@
+<!-- 예시 템플릿 -->
+
+<!--{% load static %}-->
+<!--<link rel="stylesheet" type="text/css" href="{% static 'bootstrap.min.css' %}">-->
+{% extends 'base.html' %}
+<!--밑에 오류는 무시 가능(기능에 문제 없음)-->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Weather Prediction</title>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+</head>
+<body>
+
+<button id="getPredictionButton">Get Weather Prediction</button>
+<div id="predictionResult"></div>
+
+<script>
+$(document).ready(function() {
+    $("#getPredictionButton").click(function() {
+        // API 호출
+        $.ajax({
+            url: '/get_weather_data/',
+            type: 'GET',
+            dataType: 'json',
+            success: function(response) {
+                // 예측 결과를 화면에 표시
+                $("#predictionResult").text("Weather Prediction: " + response.predictions);
+            },
+            error: function(error) {
+                console.error('Error fetching weather prediction:', error);
+            }
+        });
+    });
+});
+</script>
+
+</body>
+</html>
