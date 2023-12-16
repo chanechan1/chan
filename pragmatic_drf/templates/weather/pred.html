@@ -1,0 +1,133 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Weather Prediction</title>
+    <style>
+        body {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        h1 {
+            font-family: 'Roboto', sans-serif;
+            font-size: 4em;
+            color: #146c43;
+        }
+
+        .body-container {
+            position: relative;
+            margin-top: 20px;
+        }
+
+        .body-image {
+            width: 100%; /* 이미지를 부모 요소의 100%로 확장 */
+            height: auto; /* 가로 비율 유지하면서 세로 크기 자동 조절 */
+            margin-top: 10px;
+        }
+
+        .search-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            font-size: 1em;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 300px; /* 원하는 너비로 조절 */
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #fff;
+            background-color: #4CAF50;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #4CAF50;
+        }
+
+        .footer-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background-color: #fff;
+            padding: 20px;
+            font-size: 1.2em;
+            color: #000000;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .footer-image {
+            width: 30px;
+            height: 30px;
+            margin-right: 10px;
+        }
+
+        footer {
+            margin-top: 10px;
+            font-family: 'Roboto', sans-serif;
+        }
+    </style>
+
+    <script>
+        function getSearchQuery() {
+            var searchInput = document.getElementById("search-input");
+            var searchQuery = searchInput.value;
+            alert("검색어: " + searchQuery);
+            // 여기서는 검색어를 alert로 표시하도록 했지만 실제로는 원하는 동작으로 변경 가능
+            return searchQuery;
+        }
+
+        function onSubmitForm(event) {
+            event.preventDefault(); // 기본 동작 방지
+            getSearchQuery(); // 검색어 표시 함수 호출
+            // 원하는 동작을 수행하도록 추가 코드 작성 가능
+        }
+    </script>
+</head>
+<body>
+    <h1>Weather Prediction</h1>
+    <div class="body-container">
+        {% for data in weather_data %}
+            <p>{{ data }}</p>
+        {% endfor %}
+
+        <!-- 바디 이미지 삽입 -->
+        <img class="body-image" src="{% static 'test1.jpg' %}" alt="Body Image">
+
+        <!-- 검색창 추가 -->
+        <div class="search-container">
+            <form action="/weather/get_sun_predictions/" method="get" class="button-container" onsubmit="onSubmitForm(event)">
+                <input type="text" id="search-input" placeholder="검색어를 입력하세요">
+                <button type="submit">Get Sun Predictions</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 이미지와 푸터를 같은 부모 요소로 감싸기 -->
+    <div class="footer-container">
+        <!-- 이미지 삽입 -->
+        <img class="footer-image" src="{% static 'konkuk.png' %}" alt="Footer Image">
+
+        <!-- 하단 푸터 -->
+        <footer>
+            Konkuk Univ.
+        </footer>
+    </div>
+</body>
+</html>
