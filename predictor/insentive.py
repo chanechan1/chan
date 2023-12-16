@@ -176,9 +176,12 @@ def _post_bids(amounts):
     print(success)
 
 def _run():
-    a=_get_weathers_forecasts10('2023-11-11')
-    b=_get_weathers_forecasts17('2023-11-11')
+    a=_get_weathers_forecasts10('2023-11-16')
+    b=_get_weathers_forecasts17('2023-11-14')
+    c=_get_gen_forecasts10('2023-11-15')
+    d = _get_gen_forecasts17('2023-11-14')
     print(a)
+    e=_get_weathers_observeds('2023-11-14')
 def calculate_mae(actual, predicted):
     actual = np.array(actual)
     predicted = np.array(predicted)

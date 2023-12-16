@@ -1,0 +1,39 @@
+version: "3.10"
+
+services:
+
+
+  # 0
+  db:
+    container_name: advanced
+    image: postgres
+    restart: always
+    volumes:
+      - ${DBLoc}:/var/lib/postgresql/data
+    environment:
+      - LC_ALL=en_US.UTF-8
+      - TZ=Asia/Seoul
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=advanced
+    ports:
+      - "5433:5432" #외부포트, 도커포트
+
+
+  test:
+    container_name: test
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - GIT_ID=${GIT_ID}
+        - GIT_PASSWORD=${GIT_PASSWORD}
+        - GIT_USERNAME=${GIT_USERNAME}
+        - GIT_EMAIL=${GIT_EMAIL}
+    environment:
+      - PYTHONUNBUFFERED=1
+      - TZ=Asia/Seoul
+      - FUN=test
+
+
