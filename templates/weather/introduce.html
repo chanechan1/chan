@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Introduce</title>
+    <style>
+
+        /* 버튼 스타일링 */
+        button {
+            background: linear-gradient(to right, #56ab2f, #a8e063); /* 그라디언트 배경 */
+            color: white; /* 텍스트 색상 */
+            font-size: 1em; /* 폰트 크기 */
+            padding: 10px 20px; /* 안쪽 여백 */
+            border: none; /* 테두리 없음 */
+            border-radius: 25px; /* 둥근 테두리 */
+            cursor: pointer; /* 클릭 가능한 항목으로 마우스 포인터 변경 */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* 그림자 효과 */
+            transition: all 0.3s; /* 전환 효과 */
+            margin-top: 10px; /* 상단 여백 */
+        }
+
+        /* 버튼 호버 효과 */
+        button:hover {
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* 그림자 효과 강조 */
+            transform: translateY(-2px); /* 클릭 시 약간 위로 이동 */
+        }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+            background: #f7f7f7;
+        }
+
+        .profile-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .profile {
+            display: flex;
+            align-items: center;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            width: 80%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .profile img {
+            width: 150px; /* 프로필 이미지 크기 조정 */
+            height: 150px;
+            border-radius: 50%;
+            margin-right: 20px; /* 이미지와 텍스트 사이 간격 */
+        }
+
+        .profile-info {
+            text-align: left;
+            flex-grow: 1;
+        }
+
+        .header-button {
+            margin: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header-button">
+        <a href="/" style="text-decoration: none;">
+            <button type="button">Main Page</button>
+        </a>
+    </div>
+    <div class="banner-image">
+        <img src="/static/banner.jpg" alt="Banner Image" style="width: 50%; height: 50%;">
+    </div>
+    <div class="profile-container">
+        <!-- 각 프로필 -->
+        <!-- 프로필 1 -->
+        <div class="profile">
+            <img src="/static/image8.jpg" alt="Person 1">
+            <div class="profile-info">
+                <h3><차석셰프> 권병찬</h3>
+                <p>사람 1에 대한 소개입니다. Lorem ipsum dolor sit amet...</p>
+            </div>
+        </div>
+
+        <!-- 프로필 2 -->
+        <div class="profile">
+            <img src="/static/image2.jpg" alt="Person 2">
+            <div class="profile-info">
+                <h3><차석셰프> 김재호</h3>
+                <p>사람 2에 대한 소개입니다. Lorem ipsum dolor sit amet...</p>
+            </div>
+        </div>
+
+        <!-- 프로필 3 -->
+        <div class="profile">
+            <img src="/static/image3.jpg" alt="Person 3">
+            <div class="profile-info">
+                <h3><차석셰프> 정동주</h3>
+                <p>사람 3에 대한 소개입니다. Lorem ipsum dolor sit amet...</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

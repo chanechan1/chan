@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ dong_name }}의 태양광 예측</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f7f7f7;
+            text-align: center; /* 중앙 정렬 */
+        }
+
+        h1 {
+            color: #333;
+            margin-top: 50px;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .button-container {
+            margin: 20px 0;
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            margin: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        form {
+            margin-top: 20px;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            width: 200px;
+        }
+
+        button[type="submit"] {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background: #5cb85c;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        button[type="submit"]:hover {
+            background: #4cae4c;
+        }
+    </style>
+</head>
+<body>
+    <h1>2023-12-19일의 {{ dong_name }}의 태양광 예측</h1>
+
+    <!-- 이미지 데이터를 표시 -->
+    {% if image_base64 %}
+        <div class="image-container">
+            <img src="data:image/png;base64,{{ image_base64 }}" alt="Sun Prediction">
+        </div>
+    {% else %}
+        <p>No image available.</p>
+    {% endif %}
+
+    <div class="button-container">
+        <!-- 메인 화면으로 돌아가기 버튼 -->
+        <a href="/" style="text-decoration: none;">
+            <button type="button">Main Page</button>
+        </a>
+    </div>
+
+    <!-- 검색창 -->
+    <form action="/weather/get_sun_predictions/" method="get">
+        <input type="text" name="search-input" placeholder="조사할 동네의 동이름을 입력하세요">
+        <button type="submit">검색</button>
+    </form>
+</body>
+</html>
